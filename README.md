@@ -15,3 +15,25 @@ JOIN students_admission stu ON
 a.class_department_section_id = stu.id
 GROUP BY stu.student_id ;
 ```
+## Table
+| Name            | Email                        | Teacher        | Subject | Grade | Course                     |
+|-----------------|------------------------------|----------------|---------|-------|--------------------------|
+| Shehbaz         | Shehbaz@gmail.com            | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| Abdul Rehman    | AbdulRehman@gmail.com        | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| Arslan          | Arslan@gmail.com             | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| RajaHaider ali  | RajaHaider@gmail.com         | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| Noman Nadeem    | NomanNadeem@gmail.com        | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| Salman Ahmad    | SalmanAhmad@gmail.com        | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| Shaukat         | shaukat39@gmail.com          | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| Asif Ahmad Khan | Asif20772@gmail.com          | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| Soban Farooq    | sobiii777@gmail.com          | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| Huzaifa Kaleem  | HuzaifaTheSpirited@gmail.com | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| Hadiya          | hadiya727@gmail.com          | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| Laraib Ishtiaq  | Laraib7426@gmail.com         | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| Zainab Mehboob  | The_Zealous@gmail.com        | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| Umair Hassan    | oatitude3310@gmail.com       | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| Inam Ul Haq     | cyber-fanatic@gmail.com      | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| Hunzilah        | Hunzilah16@gmail.com         | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| Hamza Ahmed     | DryRunHamza@gmail.com        | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+| Uzair           | uzair-py@gmail.com           | Muhammad Hashim| Science | A     | JavaScript, MySql, Python|
+
