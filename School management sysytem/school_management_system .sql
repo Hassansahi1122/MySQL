@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 04, 2024 at 04:06 AM
+-- Generation Time: Apr 16, 2024 at 09:49 AM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -20,6 +20,81 @@ SET time_zone = "+00:00";
 --
 -- Database: `school_management_system`
 --
+
+DELIMITER $$
+--
+-- Procedures
+--
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Access` (IN `Email` VARCHAR(255), IN `class` INT, IN `section` VARCHAR(5), IN `department` VARCHAR(15))   BEGIN
+      DECLARE cmsg VARCHAR(255);
+      DECLARE name VARCHAR(50);
+      SELECT t.Name INTO name FROM teachers t WHERE t.Email = Email; 
+    -- Check if the email is null or empty
+    IF Email IS NULL OR Email = '' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Email cannot be null or empty';
+    -- Check if the email exists in the table
+    ELSEIF NOT EXISTS (SELECT 1 FROM teachers t WHERE t.Email = Email) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Email does not exist';
+
+    -- Check if the class and section are null
+    ELSEIF class IS NULL AND (section IS NULL OR section = '') AND (department IS NULL OR department = '') THEN
+        -- Show all class and section related to the email
+     SELECT 
+    c.class_name AS Classes, 
+    s.section_name Section, 
+    d.department_name AS Departments,
+    b.book_name AS courses
+FROM 
+    assign assi
+    JOIN class_department_section cds ON assi.class_department_section_id = cds.id
+    JOIN classes c ON cds.class_id = c.class_id
+    JOIN departments d ON cds.department_id = d.department_id
+    JOIN sections s ON cds.section_id = s.section_id
+    JOIN book_author ba ON assi.book_author_id = ba.id
+    JOIN books b USING(book_id)
+    JOIN teachers t USING(teacher_id)
+WHERE 
+    t.Email = 'HashimThePassionate@gmail.com'
+GROUP BY
+    c.class_name, 
+    s.section_name, 
+    d.department_name,
+    b.book_name;
+     
+    ELSEIF class IS NOT NULL AND (section IS NULL OR section = '') AND (department IS NULL OR department = '') THEN
+    IF NOT EXISTS (SELECT 1 FROM assign a JOIN teachers t USING(teacher_id) JOIN
+  class_department_section cds ON a.class_department_section_id = cds.id
+  JOIN classes c USING(class_id)
+  WHERE t.Email = Email AND c.class_id = class) THEN
+   SET cmsg = CONCAT_WS(' ','The Class',class,'not assign to',name);
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = cmsg;
+    END IF;
+    ELSEIF class IS NOT NULL AND (section IS NOT NULL OR section <> '') AND (department IS NOT NULL OR department <> '') THEN
+         SELECT 
+    c.class_name AS Classes, 
+    s.section_name Section, 
+    d.department_name AS Departments,
+    b.book_name AS courses
+FROM 
+    assign assi
+    JOIN class_department_section cds ON assi.class_department_section_id = cds.id
+    JOIN classes c ON cds.class_id = c.class_id
+    JOIN departments d ON cds.department_id = d.department_id
+    JOIN sections s ON cds.section_id = s.section_id
+    JOIN book_author ba ON assi.book_author_id = ba.id
+    JOIN books b USING(book_id)
+    JOIN teachers t USING(teacher_id)
+WHERE 
+    t.Email = 'HashimThePassionate@gmail.com' AND c.class_id = class AND s.section_name = section AND d.department_name = department
+GROUP BY
+    c.class_name, 
+    s.section_name, 
+    d.department_name,
+    b.book_name;
+    END IF;
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -40,7 +115,9 @@ CREATE TABLE `assign` (
 --
 
 INSERT INTO `assign` (`id`, `class_department_section_id`, `book_author_id`, `teacher_id`, `timings_weekday_id`) VALUES
+(6, 13, 1, 10, 18),
 (1, 20, 1, 10, 4),
+(5, 20, 2, 1, 18),
 (2, 20, 5, 10, 9),
 (3, 20, 6, 10, 13),
 (4, 20, 7, 10, 13);
@@ -267,6 +344,23 @@ INSERT INTO `sections` (`section_id`, `section_name`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Stand-in structure for view `sir_hashim`
+-- (See below for the actual view)
+--
+CREATE TABLE `sir_hashim` (
+`student_id` int(11)
+,`Student Name` varchar(100)
+,`Student Email` varchar(100)
+,`Teacher` varchar(100)
+,`Department` varchar(100)
+,`Section` varchar(100)
+,`Course` mediumtext
+,`days` mediumtext
+);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `students_admission`
 --
 
@@ -277,7 +371,7 @@ CREATE TABLE `students_admission` (
   `date_of_birth` date NOT NULL,
   `address` varchar(50) DEFAULT NULL,
   `phone_number` varchar(20) DEFAULT NULL,
-  `email` varchar(100) DEFAULT NULL,
+  `email` varchar(100) NOT NULL,
   `gender` enum('Male','Female','Other') NOT NULL,
   `admission_date` date NOT NULL,
   `grade` varchar(2) DEFAULT NULL,
@@ -306,23 +400,32 @@ INSERT INTO `students_admission` (`Admission_id`, `student_id`, `name`, `date_of
 (15, 15, 'Inam Ul Haq', '2000-01-01', '123 Main St', '555-5555', 'cyber-fanatic@gmail.com', 'Male', '2024-02-12', 'A', 20),
 (16, 16, 'Hunzilah', '2000-01-01', '123 Main St', '555-5555', 'Hunzilah16@gmail.com', 'Male', '2024-02-12', 'A', 20),
 (17, 17, 'Hamza Ahmed', '2000-01-01', '123 Main St', '555-5555', 'DryRunHamza@gmail.com', 'Male', '2024-02-12', 'A', 20),
-(18, 18, 'Uzair', '2000-01-01', '123 Main St', '555-5555', 'uzair-py@gmail.com', 'Male', '2024-02-12', 'A', 20);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `student_record`
--- (See below for the actual view)
---
-CREATE TABLE `student_record` (
-`student_id` int(11)
-,`Student Name` varchar(100)
-,`Student Email` varchar(100)
-,`Teacher` varchar(100)
-,`department_name` varchar(100)
-,`section_name` varchar(100)
-,`Course` mediumtext
-);
+(18, 18, 'Uzair', '2000-01-01', '123 Main St', '555-5555', 'uzair-py@gmail.com', 'Male', '2024-02-12', 'A', 20),
+(19, 1, 'Ahmad', '2005-03-15', '123 Main St', '1234567890', 'ahmad@example.com', 'Male', '2024-04-16', 'A', 13),
+(20, 2, 'Fatima', '2006-04-20', '456 Elm St', '2345678901', 'fatima@example.com', 'Female', '2024-04-16', 'A', 13),
+(21, 3, 'Muhammad', '2007-05-25', '789 Oak St', '3456789012', 'muhammad@example.com', 'Male', '2024-04-16', 'A', 13),
+(22, 4, 'Ayesha', '2008-06-30', '321 Pine St', '4567890123', 'ayesha@example.com', 'Female', '2024-04-16', 'A', 13),
+(23, 5, 'Ali', '2009-07-05', '654 Cedar St', '5678901234', 'ali@example.com', 'Male', '2024-04-16', 'A', 13),
+(24, 6, 'Zainab', '2010-08-10', '987 Birch St', '6789012345', 'zainab@example.com', 'Female', '2024-04-16', 'A', 13),
+(25, 7, 'Mustafa', '2011-09-15', '147 Maple St', '7890123456', 'mustafa@example.com', 'Male', '2024-04-16', 'A', 13),
+(26, 8, 'Khadija', '2012-10-20', '258 Walnut St', '8901234567', 'khadija@example.com', 'Female', '2024-04-16', 'A', 13),
+(27, 9, 'Hassan', '2013-11-25', '369 Pine St', '9012345678', 'hassan@example.com', 'Male', '2024-04-16', 'A', 13),
+(28, 10, 'Amina', '2014-12-30', '741 Oak St', '0123456789', 'amina@example.com', 'Female', '2024-04-16', 'A', 13),
+(29, 11, 'Omar', '2005-01-15', '852 Elm St', '1234567890', 'omar@example.com', 'Male', '2024-04-16', 'A', 13),
+(30, 12, 'Safiya', '2006-02-20', '963 Cedar St', '2345678901', 'safiya@example.com', 'Female', '2024-04-16', 'A', 13),
+(31, 13, 'Bilal', '2007-03-25', '159 Birch St', '3456789012', 'bilal@example.com', 'Male', '2024-04-16', 'B', 13),
+(32, 14, 'Aisha', '2008-04-30', '357 Walnut St', '4567890123', 'aisha@example.com', 'Female', '2024-04-16', 'B', 13),
+(33, 15, 'Yusuf', '2009-05-05', '468 Pine St', '5678901234', 'yusuf@example.com', 'Male', '2024-04-16', 'B', 13),
+(34, 16, 'Sara', '2010-06-10', '579 Oak St', '6789012345', 'sara@example.com', 'Female', '2024-04-16', 'B', 13),
+(35, 17, 'Ibrahim', '2011-07-15', '753 Cedar St', '7890123456', 'ibrahim@example.com', 'Male', '2024-04-16', 'B', 13),
+(36, 18, 'Zahra', '2012-08-20', '951 Birch St', '8901234567', 'zahra@example.com', 'Female', '2024-04-16', 'B', 13),
+(37, 19, 'Hamza', '2013-09-25', '357 Walnut St', '9012345678', 'hamza@example.com', 'Male', '2024-04-16', 'B', 13),
+(38, 20, 'Maryam', '2014-10-30', '468 Pine St', '0123456789', 'maryam@example.com', 'Female', '2024-04-16', 'B', 13),
+(39, 21, 'Khalid', '2015-11-04', '579 Oak St', '1234567890', 'khalid@example.com', 'Male', '2024-04-16', 'B', 13),
+(40, 22, 'Layla', '2016-12-09', '753 Cedar St', '2345678901', 'layla@example.com', 'Female', '2024-04-16', 'B', 13),
+(41, 23, 'Amir', '2017-01-14', '951 Birch St', '3456789012', 'amir@example.com', 'Male', '2024-04-16', 'B', 13),
+(42, 24, 'Nadia', '2018-02-19', '357 Walnut St', '4567890123', 'nadia@example.com', 'Female', '2024-04-16', 'B', 13),
+(43, 25, 'Jamil', '2019-03-24', '468 Pine St', '5678901234', 'jamil@example.com', 'Male', '2024-04-16', 'B', 13);
 
 -- --------------------------------------------------------
 
@@ -472,11 +575,11 @@ INSERT INTO `weekday` (`day_id`, `day_name`, `status`) VALUES
 -- --------------------------------------------------------
 
 --
--- Structure for view `student_record`
+-- Structure for view `sir_hashim`
 --
-DROP TABLE IF EXISTS `student_record`;
+DROP TABLE IF EXISTS `sir_hashim`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `student_record`  AS SELECT `stu`.`student_id` AS `student_id`, `stu`.`name` AS `Student Name`, `stu`.`email` AS `Student Email`, `t`.`Name` AS `Teacher`, `de`.`department_name` AS `department_name`, `s`.`section_name` AS `section_name`, group_concat(distinct `bo`.`book_name` separator ', ') AS `Course` FROM ((((((((`assign` `a` join `class_department_section` `class` on(`a`.`class_department_section_id` = `class`.`id`)) join `sections` `s` on(`class`.`section_id` = `s`.`section_id`)) join `departments` `de` on(`class`.`department_id` = `de`.`department_id`)) join `book_author` `ba` on(`a`.`book_author_id` = `ba`.`id`)) join `books` `bo` on(`ba`.`book_id` = `bo`.`book_id`)) join `teachers` `t` on(`a`.`teacher_id` = `t`.`teacher_id`)) join `timings_weekday` `ti` on(`a`.`timings_weekday_id` = `ti`.`id`)) join `students_admission` `stu` on(`a`.`class_department_section_id` = `stu`.`id`)) GROUP BY `stu`.`student_id` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `sir_hashim`  AS SELECT `stu`.`student_id` AS `student_id`, `stu`.`name` AS `Student Name`, `stu`.`email` AS `Student Email`, `t`.`Name` AS `Teacher`, `de`.`department_name` AS `Department`, `s`.`section_name` AS `Section`, group_concat(distinct `bo`.`book_name` separator ', ') AS `Course`, group_concat(distinct `wee`.`day_name` separator '/') AS `days` FROM (((((((((`assign` `a` join `class_department_section` `class` on(`a`.`class_department_section_id` = `class`.`id`)) join `sections` `s` on(`class`.`section_id` = `s`.`section_id`)) join `departments` `de` on(`class`.`department_id` = `de`.`department_id`)) join `book_author` `ba` on(`a`.`book_author_id` = `ba`.`id`)) join `books` `bo` on(`ba`.`book_id` = `bo`.`book_id`)) join `teachers` `t` on(`a`.`teacher_id` = `t`.`teacher_id`)) join `timings_weekday` `ti` on(`a`.`timings_weekday_id` = `ti`.`id`)) join `weekday` `wee` on(`ti`.`day_id` = `wee`.`day_id`)) join `students_admission` `stu` on(`a`.`class_department_section_id` = `stu`.`id`)) WHERE `a`.`class_department_section_id` = 20 AND `t`.`Name` = 'MUhammad Hashim' GROUP BY `stu`.`student_id` ;
 
 --
 -- Indexes for dumped tables
@@ -550,6 +653,7 @@ ALTER TABLE `sections`
 --
 ALTER TABLE `students_admission`
   ADD PRIMARY KEY (`Admission_id`),
+  ADD UNIQUE KEY `email` (`email`),
   ADD KEY `id` (`id`);
 
 --
@@ -592,7 +696,7 @@ ALTER TABLE `weekday`
 -- AUTO_INCREMENT for table `assign`
 --
 ALTER TABLE `assign`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `author`
@@ -646,7 +750,7 @@ ALTER TABLE `sections`
 -- AUTO_INCREMENT for table `students_admission`
 --
 ALTER TABLE `students_admission`
-  MODIFY `Admission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `Admission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- AUTO_INCREMENT for table `teachers`
